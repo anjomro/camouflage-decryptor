@@ -85,3 +85,28 @@ def extract_camouflage_password(craw: bytes):
         click.echo("This camouflage image has no password. Exiting.")
         return b''
     click.echo("Password Str: " + password)
+
+
+def get_all_infos(craw: bytes):
+    '''Prints all information that is encoded in camouflage part of file'''
+    hidden_file_size_bytes = bytes_to_int(craw[26:30])
+    camouflage_version = extract_text(craw[-20:])
+    file_name_carrier = extract_text(craw[-540:])
+    file_name_secret = extract_text(craw[-795:])
+
+    # Make file size human readable (convert to KB, MB, GB, ...)
+    units = ['B', 'KB', 'MB', 'GB', 'TB']
+    size = hidden_file_size_bytes
+    hidden_file_size = ""
+    for unit in units:
+        if size < 1024.0:
+            hidden_file_size = f"{size:.2f} {unit}"
+            break
+        size /= 1024.0
+
+
+    click.echo("File Name Carrier: " + file_name_carrier)
+    click.echo("File Name Secret: " + file_name_secret)
+    click.echo("Hidden File Size: " + hidden_file_size)
+    click.echo("Camouflage Version: " + camouflage_version)
+    extract_camouflage_password(craw)
