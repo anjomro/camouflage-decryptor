@@ -4,7 +4,7 @@
 [![PyPI - Python Version](https://img.shields.io/pypi/pyversions/camouflage-decryptor.svg)](https://pypi.org/project/camouflage-decryptor)
 
 -----
-This is a tool to extract information from files that have been generated with camouflage. Currently only JPEG-files are supported.
+This is a tool to extract information from files that have been generated with camouflage.
 
 **Table of Contents**
 
@@ -20,7 +20,7 @@ pip install camouflage-decryptor
 
 ## Usage
 
-To get the password from a stego image:
+To get the password from a stego file:
 ```console
 camouflage-decryptor get-key my-stego-image.jpg
 ```

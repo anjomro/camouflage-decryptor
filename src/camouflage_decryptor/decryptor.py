@@ -23,51 +23,65 @@ def get_static_camouflage_key() -> bytes:
     return key_bytes
 
 
-def split_camouflage_part(jpg_raw: bytes) -> bytes:
-    """Split and return camouflage encoded part of jpg"""
-    # Get end of jpg (bytes: FF D9)
-    end_of_jpg = jpg_raw.rfind(b'\xff\xd9')
-    # Get camouflage part of jpg
-    camouflage_part = jpg_raw[end_of_jpg + 2:]
-    return camouflage_part
+def decrypt_with_static_key(raw: bytes) -> bytes:
+    '''Decrypts raw bytes that were encrypted with static camouflage key'''
+    # Get static camouflage key
+    key_bytes = get_static_camouflage_key()
+    # XOR static key with raw bytes
+    decrypted_bytes = bytes([a ^ b for a, b in zip(raw, key_bytes)])
+    return decrypted_bytes
 
 
-def check_if_jpg(data_raw: bytes) -> bool:
-    """Check if data is a jpg"""
-    if data_raw.startswith(b'\xff\xd8'):
-        # Check that data contains jpg end bytes (FF D9)
-        if b'\xff\xd9' in data_raw:
-            return True
-    return False
+def get_till_space(raw: bytes) -> bytes:
+    """Return all bytes of input till first space byte (0x20)"""
+    return raw.split(b'\x20')[0]
 
 
-def extract_camouflage_password(jpg_raw: bytes) -> bytes:
+def extract_text(raw: bytes) -> str:
+    '''Extracts text from raw bytes encoded by camouflage standard technique'''
+    # Only take bytes till first space byte (0x20)
+    text_bytes = get_till_space(raw)
+    # Decrypt bytes
+    decrypted_bytes = decrypt_with_static_key(text_bytes)
+    # Decode bytes to string
+    decrypted_text = decrypted_bytes.decode("utf-8")
+    return decrypted_text
+
+
+def bytes_to_int(raw: bytes) -> int:
+    """Converts raw bytes to int"""
+    return int.from_bytes(raw, byteorder='little')
+
+
+def get_camouflage_part(raw: bytes) -> bytes:
+    """Extract camouflage part from bytes of treated file"""
+    # Get camouflage start position from fixed position -281
+    camouflage_start_position = bytes_to_int(raw[-281:-279])
+    # Get camouflage part of raw bytes
+    craw = raw[camouflage_start_position:]
+    return craw
+
+
+def is_valid_camouflage_part(craw: bytes) -> bool:
+    """Checks if bytes are from a file treated with camouflage"""
+    # Get size of hidden part at fixed position -285
+    hidden_size = bytes_to_int(craw[26:30])
+    # The size of the hidden part is twice in the encoded part at different postions.
+    control_hidden_size = bytes_to_int(craw[-285:-283])
+    # This can be used to reliably check that it is a file that has been treated with camouflage
+    if hidden_size != control_hidden_size:
+        click.echo("This most likely isn't a file that has been treated with camouflage.")
+        return False
+    return True
+
+
+def extract_camouflage_password(craw: bytes):
     """Extract key from image treated with camouflage"""
-    # Check if jpg
-    if not check_if_jpg(jpg_raw):
-        click.echo("No jpg found. Are you sure this is a camouflage image? Exiting.")
-        return b''
-    # Get camouflage part of jpg
-    camouflage_part = split_camouflage_part(jpg_raw)
-    if len(camouflage_part) == 0:
-        click.echo("No camouflage part found. Are you sure this is a camouflage image? Exiting.")
-        return b''
-    # Ensure that camouflage part starts with 0x20 0x00
-    if not camouflage_part.startswith(b'\x20\x00'):
-        click.echo("The camouflage part doesn't start with bytes 20 00, this is unexpected. Exiting.")
-        #return b''
+
     # Get obscured key at fixed position -275
-    obscured_key = camouflage_part[-275:]
-    # Take all bytes till first whitespace byte (0x20)
-    key_bytes = obscured_key.split(b'\x20')[0]
+    password = extract_text(craw[-275:])
     # Check that key isn't empty
-    if len(key_bytes) == 0:
+    if len(password) == 0:
         click.echo("This camouflage image has no password. Exiting.")
         return b''
-    # Get static camouflage key with same length as obscured key
-    static_key = get_static_camouflage_key()[:len(key_bytes)]
-    # XOR static key with obscured key
-    decrypted_key = bytes([a ^ b for a, b in zip(key_bytes, static_key)])
-    click.echo("Password Hex: " + decrypted_key.hex(" ", -2))
-    click.echo("Password Str: " + decrypted_key.decode("utf-8"))
-    return decrypted_key
+    click.echo("Password Str: " + password)
