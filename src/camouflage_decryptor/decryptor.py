@@ -73,7 +73,7 @@ def is_valid_camouflage_part(craw: bytes) -> bool:
     # Get size of hidden part at fixed position -285
     hidden_size = bytes_to_int(craw[26:30])
     # The size of the hidden part is twice in the encoded part at different postions.
-    control_hidden_size = bytes_to_int(craw[-285:-283])
+    control_hidden_size = bytes_to_int(craw[-285:-281])
     # This can be used to reliably check that it is a file that has been treated with camouflage
     if hidden_size != control_hidden_size:
         click.echo("This most likely isn't a file that has been treated with camouflage.")
