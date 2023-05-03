@@ -4,7 +4,8 @@
 import click
 
 from camouflage_decryptor.__about__ import __version__
-from camouflage_decryptor.decryptor import extract_camouflage_password, get_camouflage_part, is_valid_camouflage_part, get_all_infos
+from camouflage_decryptor.decryptor import get_camouflage_password, get_camouflage_part, is_valid_camouflage_part, \
+    get_all_infos
 
 
 @click.group(context_settings={"help_option_names": ["-h", "--help"]})
@@ -20,7 +21,9 @@ def get_key(input):
     img_raw = input.read()
     camouflage_bytes = get_camouflage_part(img_raw)
     if is_valid_camouflage_part(camouflage_bytes):
-        extract_camouflage_password(camouflage_bytes)
+        password = get_camouflage_password(camouflage_bytes, verbose=True)
+        click.echo(f"Password: {password}")
+
 
 @click.command()
 @click.argument('input', type=click.File('rb'))

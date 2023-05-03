@@ -75,16 +75,15 @@ def is_valid_camouflage_part(craw: bytes) -> bool:
     return True
 
 
-def extract_camouflage_password(craw: bytes):
+def get_camouflage_password(craw: bytes, verbose: bool = False) -> str:
     """Extract key from image treated with camouflage"""
 
     # Get obscured key at fixed position -275
     password = extract_text(craw[-275:])
     # Check that key isn't empty
-    if len(password) == 0:
-        click.echo("This camouflage image has no password. Exiting.")
-        return b''
-    click.echo("Password Str: " + password)
+    if len(password) == 0 and verbose:
+        click.echo("This camouflage image has no password.")
+    return password
 
 
 def get_all_infos(craw: bytes):
@@ -104,9 +103,8 @@ def get_all_infos(craw: bytes):
             break
         size /= 1024.0
 
-
     click.echo("File Name Carrier: " + file_name_carrier)
     click.echo("File Name Secret: " + file_name_secret)
     click.echo("Hidden File Size: " + hidden_file_size)
     click.echo("Camouflage Version: " + camouflage_version)
-    extract_camouflage_password(craw)
+    click.echo("Password: " + get_camouflage_password(craw))
