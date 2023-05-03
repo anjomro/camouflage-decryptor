@@ -55,11 +55,17 @@ def bytes_to_int(raw: bytes) -> int:
 
 def get_camouflage_part(raw: bytes) -> bytes:
     """Extract camouflage part from bytes of treated file"""
-    # Get camouflage start position from fixed position -281
-    camouflage_start_position = bytes_to_int(raw[-281:-279])
+    camouflage_start_position = get_camouflage_start(raw)
     # Get camouflage part of raw bytes
     craw = raw[camouflage_start_position:]
     return craw
+
+
+def get_camouflage_start(raw: bytes) -> int:
+    """Extract camouflage start position encoded in camouflage part"""
+    # Get camouflage start position from fixed position -281
+    camouflage_start_position = bytes_to_int(raw[-281:-279])
+    return camouflage_start_position
 
 
 def is_valid_camouflage_part(craw: bytes) -> bool:
@@ -77,12 +83,11 @@ def is_valid_camouflage_part(craw: bytes) -> bool:
 
 def get_camouflage_password(craw: bytes, verbose: bool = False) -> str:
     """Extract key from image treated with camouflage"""
-
     # Get obscured key at fixed position -275
     password = extract_text(craw[-275:])
     # Check that key isn't empty
     if len(password) == 0 and verbose:
-        click.echo("This camouflage image has no password.")
+        click.echo("This camouflage image has no password.", err=True)
     return password
 
 
@@ -108,3 +113,27 @@ def get_all_infos(craw: bytes):
     click.echo("Hidden File Size: " + hidden_file_size)
     click.echo("Camouflage Version: " + camouflage_version)
     click.echo("Password: " + get_camouflage_password(craw))
+
+
+def get_hidden_data(craw: bytes) -> bytes:
+    """Extract hidden data from camouflage part of file"""
+    # Get size of hidden part at fixed position -285
+    hidden_size = bytes_to_int(craw[26:30])
+    # Get hidden part of raw bytes
+    hidden_data = decrypt_with_static_key(craw[30:30 + hidden_size])
+    return hidden_data
+
+
+def get_original_data(file_raw: bytes) -> bytes:
+    """Extract original data from camouflage part of file"""
+    # Check if file is valid camouflage file
+    if not is_valid_camouflage_part(get_camouflage_part(file_raw)):
+        click.echo("This isn't a valid camouflage file. Outputting unchanged file.", err=True)
+        return file_raw
+    else:
+        # Get start of camouflage part
+        camouflage_start_position = get_camouflage_start(file_raw)
+        # Get original data
+        original_data = file_raw[:camouflage_start_position]
+        return original_data
+
