@@ -91,28 +91,32 @@ def get_camouflage_password(craw: bytes, verbose: bool = False) -> str:
     return password
 
 
+def make_file_size_human_readable(size: int) -> str:
+    '''Make file size human readable, adapt to right unit (KB, MB, GB, ...)'''
+    units = ['B', 'KB', 'MB', 'GB', 'TB']
+    file_size_str = ""
+    for unit in units:
+        if size < 1024.0:
+            file_size_str = f"{size:.2f} {unit}"
+            break
+        size /= 1024.0
+    return file_size_str
+
+
 def get_all_infos(craw: bytes):
     '''Prints all information that is encoded in camouflage part of file'''
-    hidden_file_size_bytes = bytes_to_int(craw[26:30])
+    hidden_file_size = bytes_to_int(craw[26:30])
     camouflage_version = extract_text(craw[-20:])
     file_name_carrier = extract_text(craw[-540:])
     file_name_secret = extract_text(craw[-795:])
+    original_file_size = get_camouflage_start(craw)
 
-    # Make file size human readable (convert to KB, MB, GB, ...)
-    units = ['B', 'KB', 'MB', 'GB', 'TB']
-    size = hidden_file_size_bytes
-    hidden_file_size = ""
-    for unit in units:
-        if size < 1024.0:
-            hidden_file_size = f"{size:.2f} {unit}"
-            break
-        size /= 1024.0
-
-    click.echo("File Name Carrier: " + file_name_carrier)
-    click.echo("File Name Secret: " + file_name_secret)
-    click.echo("Hidden File Size: " + hidden_file_size)
-    click.echo("Camouflage Version: " + camouflage_version)
-    click.echo("Password: " + get_camouflage_password(craw))
+    click.echo(f"{'File Name Carrier:':<30} {file_name_carrier}")
+    click.echo(f"{'File Name Secret:':<30} {file_name_secret}")
+    click.echo(f"{'Size secret file:':<30} {make_file_size_human_readable(hidden_file_size)}")
+    click.echo(f"{'File size unmodified carrier:':<30} {make_file_size_human_readable(original_file_size)}")
+    click.echo(f"{'Camouflage Version:':<30} {camouflage_version}")
+    click.echo(f"{'Password:':<30} {get_camouflage_password(craw)}")
 
 
 def get_hidden_data(craw: bytes) -> bytes:
@@ -136,4 +140,3 @@ def get_original_data(file_raw: bytes) -> bytes:
         # Get original data
         original_data = file_raw[:camouflage_start_position]
         return original_data
-

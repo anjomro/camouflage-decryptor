@@ -22,7 +22,8 @@ def get_key(input):
     camouflage_bytes = get_camouflage_part(img_raw)
     if is_valid_camouflage_part(camouflage_bytes):
         password = get_camouflage_password(camouflage_bytes, verbose=True)
-        click.echo(f"Password: {password}")
+        click.echo("Password: ", nl=False, err=True)
+        click.echo(password)
 
 
 @click.command()
@@ -44,6 +45,7 @@ def get_data(input):
     if is_valid_camouflage_part(camouflage_bytes):
         hidden_data = get_hidden_data(camouflage_bytes)
         click.echo(hidden_data, nl=False)
+
 
 @click.command()
 @click.argument('input', type=click.File('rb'))
