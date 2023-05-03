@@ -24,7 +24,7 @@ This tool provides different tools for analyzing a file that has been generated 
 #### Metadata retrieval
 To retrieve all the camouflage metadata from a prepared file the following command can be used:
 ```console
-camouflage-decryptor get-key camouflaged-file.jpg
+camouflage-decryptor get-info camouflaged-file.jpg
 ```
 The output will look similar to this one:
 
