@@ -15,9 +15,9 @@ def camouflage_decryptor():
 
 
 @click.command()
-@click.argument('input', type=click.File('rb'), help="File treated with camouflage")
+@click.argument('input', type=click.File('rb'))
 def get_key(input):
-    """Extract key from file treated with camouflage"""
+    """Extract password from file treated with camouflage"""
     img_raw = input.read()
     camouflage_bytes = get_camouflage_part(img_raw)
     if is_valid_camouflage_part(camouflage_bytes):
@@ -27,7 +27,7 @@ def get_key(input):
 
 
 @click.command()
-@click.argument('input', type=click.File('rb'), help="File treated with camouflage")
+@click.argument('input', type=click.File('rb'))
 def get_info(input):
     """Extract all information from file treated with camouflage"""
     img_raw = input.read()
@@ -51,7 +51,7 @@ def bytes_output(input: bytes, hex: bool, index: bool):
 
 
 @click.command()
-@click.argument('input', type=click.File('rb'), help="File treated with camouflage")
+@click.argument('input', type=click.File('rb'))
 @click.option("-x", "--hex", is_flag=True, show_default=True, default=False, help="Display output as hexadecimal string")
 @click.option("-i", "--index", is_flag=True, show_default=True, default=False, help="Add hex index to hexadecimal output. Only useful with --hex")
 def get_data(input, hex: bool, index: bool):
@@ -64,7 +64,7 @@ def get_data(input, hex: bool, index: bool):
 
 
 @click.command()
-@click.argument('input', type=click.File('rb'), help="File treated with camouflage")
+@click.argument('input', type=click.File('rb'))
 @click.option("-x", "--hex", is_flag=True, show_default=True, default=False, help="Display output as hexadecimal string")
 @click.option("-i", "--index", is_flag=True, show_default=True, default=False, help="Add hex index to hexadecimal output. Only useful with --hex")
 def get_original(input, hex: bool, index: bool):
