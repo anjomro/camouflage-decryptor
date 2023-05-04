@@ -36,24 +36,42 @@ def get_info(input):
         get_all_infos(camouflage_bytes)
 
 
+def bytes_output(input: bytes, hex: bool, index: bool):
+    """Prints bytes to stdout, if wanted as hex with or without index"""
+    if hex:
+        # Display in blocks of 16 bytes
+        for i in range(0, len(input), 16):
+            if index:
+                # If index enabled print hex position index
+                click.echo(f"{i:08x}   {input[i:i + 16].hex(' ')}")
+            else:
+                click.echo(input[i:i + 16].hex(' '))
+    else:
+        click.echo(input)
+
+
 @click.command()
-@click.argument('input', type=click.File('rb'))
-def get_data(input):
+@click.argument('input', type=click.File('rb'), help="File treated with camouflage")
+@click.option("-x", "--hex", is_flag=True, show_default=True, default=False, help="Display output as hexadecimal string")
+@click.option("-i", "--index", is_flag=True, show_default=True, default=False, help="Add hex index to hexadecimal output. Only useful with --hex")
+def get_data(input, hex: bool, index: bool):
     """Print hidden data to stdout"""""
     file_raw = input.read()
     camouflage_bytes = get_camouflage_part(file_raw)
     if is_valid_camouflage_part(camouflage_bytes):
         hidden_data = get_hidden_data(camouflage_bytes)
-        click.echo(hidden_data, nl=False)
+        bytes_output(hidden_data, hex, index)
 
 
 @click.command()
-@click.argument('input', type=click.File('rb'))
-def get_original(input):
+@click.argument('input', type=click.File('rb'), help="File treated with camouflage")
+@click.option("-x", "--hex", is_flag=True, show_default=True, default=False, help="Display output as hexadecimal string")
+@click.option("-i", "--index", is_flag=True, show_default=True, default=False, help="Add hex index to hexadecimal output. Only useful with --hex")
+def get_original(input, hex: bool, index: bool):
     """Print original file to stdout (with removed camouflage part)"""
     file_raw = input.read()
     original_data = get_original_data(file_raw)
-    click.echo(original_data, nl=False)
+    bytes_output(original_data, hex, index)
 
 
 camouflage_decryptor.add_command(get_key)
