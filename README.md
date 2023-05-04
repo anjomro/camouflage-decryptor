@@ -21,6 +21,13 @@ pip install camouflage-decryptor
 ## Usage
 This tool provides different tools for analyzing a file that has been generated with [camouflage](http://camouflage.unfiction.com/). This includes the following:
 
+#### Command Line Help
+For the tool and all its subcommands, help can be retrieved by calling the tool with the `--help` flag:
+```console
+camouflage-decryptor --help
+```
+
+
 #### Metadata retrieval
 To retrieve all the camouflage metadata from a prepared file the following command can be used:
 ```console
