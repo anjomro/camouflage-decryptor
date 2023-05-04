@@ -15,7 +15,7 @@ def camouflage_decryptor():
 
 
 @click.command()
-@click.argument('input', type=click.File('rb'))
+@click.argument('input', type=click.File('rb'), help="File treated with camouflage")
 def get_key(input):
     """Extract key from file treated with camouflage"""
     img_raw = input.read()
@@ -27,7 +27,7 @@ def get_key(input):
 
 
 @click.command()
-@click.argument('input', type=click.File('rb'))
+@click.argument('input', type=click.File('rb'), help="File treated with camouflage")
 def get_info(input):
     """Extract all information from file treated with camouflage"""
     img_raw = input.read()
