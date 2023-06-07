@@ -27,6 +27,8 @@ def decrypt_with_static_key(raw: bytes) -> bytes:
     '''Decrypts raw bytes that were encrypted with static camouflage key'''
     # Get static camouflage key
     key_bytes = get_static_camouflage_key()
+    # Repeat key bytes to the length of raw bytes
+    key_bytes = key_bytes * (len(raw) // len(key_bytes) + 1)
     # XOR static key with raw bytes
     decrypted_bytes = bytes([a ^ b for a, b in zip(raw, key_bytes)])
     return decrypted_bytes
@@ -43,7 +45,7 @@ def extract_text(raw: bytes) -> str:
     text_bytes = get_till_space(raw)
     # Decrypt bytes
     decrypted_bytes = decrypt_with_static_key(text_bytes)
-    # Decode bytes to string
+    # Decode bytes to stringfp.clo
     decrypted_text = decrypted_bytes.decode("utf-8")
     return decrypted_text
 
@@ -70,12 +72,8 @@ def get_camouflage_start(raw: bytes) -> int:
 
 def is_valid_camouflage_part(craw: bytes) -> bool:
     """Checks if bytes are from a file treated with camouflage"""
-    # Get size of hidden part at fixed position -285
-    hidden_size = bytes_to_int(craw[26:30])
-    # The size of the hidden part is twice in the encoded part at different postions.
-    control_hidden_size = bytes_to_int(craw[-285:-281])
-    # This can be used to reliably check that it is a file that has been treated with camouflage
-    if hidden_size != control_hidden_size:
+    # Check that camouflage part starts with 0x00 0x00 0x?? 0x?? 0xd9 0x01
+    if craw[:2] != b'\x00\x00' or craw[4:6] != b'\xd9\x01':
         click.echo("This most likely isn't a file that has been treated with camouflage.")
         return False
     return True
@@ -105,7 +103,7 @@ def make_file_size_human_readable(size: int) -> str:
 
 def get_all_infos(craw: bytes):
     '''Prints all information that is encoded in camouflage part of file'''
-    hidden_file_size = bytes_to_int(craw[26:30])
+    hidden_file_size = bytes_to_int(craw[-285:-281])
     camouflage_version = extract_text(craw[-20:])
     file_name_carrier = extract_text(craw[-540:])
     file_name_secret = extract_text(craw[-795:])
@@ -119,10 +117,13 @@ def get_all_infos(craw: bytes):
     click.echo(f"{'Password:':<30} {get_camouflage_password(craw)}")
 
 
-def get_hidden_data(craw: bytes) -> bytes:
+def get_hidden_data(craw: bytes, max_bytes: int = -1) -> bytes:
     """Extract hidden data from camouflage part of file"""
     # Get size of hidden part at fixed position -285
-    hidden_size = bytes_to_int(craw[26:30])
+    hidden_size = bytes_to_int(craw[-285:-281])
+    # If max_bytes is -1, take all bytes, else max_bytes
+    if max_bytes != -1:
+        hidden_size = min(hidden_size, max_bytes)
     # Get hidden part of raw bytes
     hidden_data = decrypt_with_static_key(craw[30:30 + hidden_size])
     return hidden_data
