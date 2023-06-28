@@ -1,20 +1,25 @@
 # SPDX-FileCopyrightText: 2023-present anjomro <py@anjomro.de>
 #
 # SPDX-License-Identifier: EUPL-1.2
+import os
+
 import click
 import requests
 
-from camouflage_decryptor.key import get_key
-
 KEY_DOWNLOAD_URL = "https://github.com/anjomro/camouflage-decryptor/releases/download/v0.2.1/STATIC_KEY_20MB"
+
+EMBEDDED_KEY_LOCATION = os.path.join(os.path.dirname(__file__), "../../assets/STATIC_KEY_20MB")
 
 
 def get_static_camouflage_key(size_bytes: int) -> bytes:
     """Returns static camouflage key"""
-    # If hardcoded key is long enough, return it
-    embedded_key = get_key()
-    if len(embedded_key) >= size_bytes:
-        return embedded_key[:size_bytes]
+    # Check file size of embedded key without reading it
+    embedded_key_size = os.path.getsize(EMBEDDED_KEY_LOCATION)
+
+    if embedded_key_size >= size_bytes:
+        # Read n bytes from embedded key
+        with open(EMBEDDED_KEY_LOCATION, "rb") as f:
+            return f.read(size_bytes)
     else:
         # Check size of downloadable key
         response = requests.head(KEY_DOWNLOAD_URL, allow_redirects=True)
@@ -23,7 +28,7 @@ def get_static_camouflage_key(size_bytes: int) -> bytes:
         print(f"The size of the download will be {make_file_size_human_readable(size_bytes)}")
         if online_key_size >= size_bytes:
             # Download exactly the needed amount of bytes
-            headers = {"Range": f"bytes=0-{size_bytes-1}"} # Range is inclusive
+            headers = {"Range": f"bytes=0-{size_bytes - 1}"}  # Range is inclusive
             response = requests.get(KEY_DOWNLOAD_URL, headers=headers)
             return response.content
         else:
