@@ -80,8 +80,11 @@ def get_camouflage_start(raw: bytes) -> int:
 
 def is_valid_camouflage_part(craw: bytes) -> bool:
     """Checks if bytes are from a file treated with camouflage"""
-    # Check that camouflage part starts with 0x00 0x00 0x?? 0x?? 0xd9 0x01
-    if craw[:2] != b'\x00\x00' or craw[4:6] != b'\xd9\x01':
+    # Check that camouflage part starts with one of the following (mixtures of start and end bytes are also ok);
+    # ---- 0x00 0x00 0x?? 0x?? 0xd9 0x01
+    # ---- 0x20 0x00 0x?? 0x?? 0xc3 0x01
+
+    if craw[:2] not in [b'\x00\x00', b'\x20\x00'] or craw[4:6] not in [b'\xd9\x01', b'\xc3\x01']:
         click.echo("This most likely isn't a file that has been treated with camouflage.")
         return False
     return True
