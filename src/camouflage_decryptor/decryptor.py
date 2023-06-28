@@ -1,32 +1,40 @@
 # SPDX-FileCopyrightText: 2023-present anjomro <py@anjomro.de>
 #
 # SPDX-License-Identifier: EUPL-1.2
-
 import click
+import requests
 
-CAMOUFLAGE_KEY = """02957A220CA614E1E1CFBF65206F9EB3 99654A53FBF67554AD23CD7E9C29E7FC
-E2F94DD2424E06C0F89A1C6238742400 55DF41CB01A2B7F38F8ADDAC33836029
-F378243E7AEBD3E49D9D43944AC7456D 2574EB0B98C97CFCC8BA326B00D3C5C2
-9434AFB0E5957D2A84A45FE56E272ADB 967E3E483946CF6F71AA3C319AA99E8F
-8973B339CA32D5F031597C022E8637F9 2B7E51F241810CD46515F770D4199820
-BF20B85567CC81188C133C633C9211E4 5B1B0822604C4AC58AB3C575C3907AF2
-B2B6C8D0388AC286F0ACE9CA5C4E3E09 297829995A84D5BA5ED5927A38FAD060
-ECF527BAEEB7DE9F9BDE65D47639769C DA688DA8A0A61ED9DB0F4DAB92CD71"""
+from camouflage_decryptor.key import get_key
+
+KEY_DOWNLOAD_URL = "https://github.com/anjomro/camouflage-decryptor/releases/download/v0.2.1/STATIC_KEY_20MB"
 
 
-def get_static_camouflage_key() -> bytes:
+def get_static_camouflage_key(size_bytes: int) -> bytes:
     """Returns static camouflage key"""
-    # Remove all non hex chars
-    key_string: str = "".join([c for c in CAMOUFLAGE_KEY if c in "0123456789ABCDEFabcdef"])
-    # Convert to bytes
-    key_bytes: bytes = bytes.fromhex(key_string)
-    return key_bytes
+    # If hardcoded key is long enough, return it
+    embedded_key = get_key()
+    if len(embedded_key) >= size_bytes:
+        return embedded_key[:size_bytes]
+    else:
+        # Check size of downloadable key
+        response = requests.head(KEY_DOWNLOAD_URL, allow_redirects=True)
+        online_key_size = int(response.headers['Content-Length'])
+        print(f"Using online key  (up to {make_file_size_human_readable(int(response.headers['Content-Length']))})")
+        print(f"The size of the download will be {make_file_size_human_readable(size_bytes)}")
+        if online_key_size >= size_bytes:
+            # Download exactly the needed amount of bytes
+            headers = {"Range": f"bytes=0-{size_bytes-1}"} # Range is inclusive
+            response = requests.get(KEY_DOWNLOAD_URL, headers=headers)
+            return response.content
+        else:
+            # Fail with error message
+            click.echo("The hidden file is too large!", err=True)
 
 
 def decrypt_with_static_key(raw: bytes) -> bytes:
     '''Decrypts raw bytes that were encrypted with static camouflage key'''
     # Get static camouflage key
-    key_bytes = get_static_camouflage_key()
+    key_bytes = get_static_camouflage_key(len(raw))
     # Repeat key bytes to the length of raw bytes
     key_bytes = key_bytes * (len(raw) // len(key_bytes) + 1)
     # XOR static key with raw bytes

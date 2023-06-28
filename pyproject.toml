@@ -26,6 +26,7 @@ classifiers = [
 ]
 dependencies = [
   "click",
+  "requests",
 ]
 
 [project.urls]
