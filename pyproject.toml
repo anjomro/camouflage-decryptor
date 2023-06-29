@@ -52,6 +52,12 @@ cov-report = [
   "- coverage combine",
   "coverage report",
 ]
+[tool.hatch.build]
+include = [
+  "assets/*",
+]
+
+
 cov = [
   "test-cov",
   "cov-report",
