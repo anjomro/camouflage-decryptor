@@ -6,7 +6,7 @@ import os
 import click
 import requests
 
-KEY_DOWNLOAD_URL = "https://github.com/anjomro/camouflage-decryptor/releases/download/v0.2.1/STATIC_KEY_20MB"
+KEY_DOWNLOAD_URL = "https://github.com/anjomro/camouflage-decryptor/releases/download/v0.3.0/STATIC_KEY_1GB"
 
 EMBEDDED_KEY_LOCATION = os.path.join(os.path.dirname(__file__), "../../assets/STATIC_KEY_20MB")
 
