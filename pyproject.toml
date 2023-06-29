@@ -30,9 +30,9 @@ dependencies = [
 ]
 
 [project.urls]
-Documentation = "https://github.com/unknown/camouflage-decryptor#readme"
-Issues = "https://github.com/unknown/camouflage-decryptor/issues"
-Source = "https://github.com/unknown/camouflage-decryptor"
+Documentation = "https://github.com/anjomro/camouflage-decryptor#readme"
+Issues = "https://github.com/anjomro/camouflage-decryptor/issues"
+Source = "https://github.com/anjomro/camouflage-decryptor"
 
 [project.scripts]
 camouflage-decryptor = "camouflage_decryptor.cli:camouflage_decryptor"
