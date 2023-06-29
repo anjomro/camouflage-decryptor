@@ -10,6 +10,7 @@ KEY_DOWNLOAD_URL = "https://github.com/anjomro/camouflage-decryptor/releases/dow
 
 EMBEDDED_KEY_LOCATION = os.path.join(os.path.dirname(__file__), "../../assets/STATIC_KEY_20MB")
 
+ENV_VARIABLE_CUSTOM_KEY = os.environ.get("CAMOUFLAGE_DECRYPTOR_KEY", None)
 
 def get_static_camouflage_key(size_bytes: int) -> bytes:
     """Returns static camouflage key"""
@@ -21,19 +22,32 @@ def get_static_camouflage_key(size_bytes: int) -> bytes:
         with open(EMBEDDED_KEY_LOCATION, "rb") as f:
             return f.read(size_bytes)
     else:
-        # Check size of downloadable key
-        response = requests.head(KEY_DOWNLOAD_URL, allow_redirects=True)
-        online_key_size = int(response.headers['Content-Length'])
-        print(f"Using online key  (up to {make_file_size_human_readable(int(response.headers['Content-Length']))})")
-        print(f"The size of the download will be {make_file_size_human_readable(size_bytes)}")
-        if online_key_size >= size_bytes:
-            # Download exactly the needed amount of bytes
-            headers = {"Range": f"bytes=0-{size_bytes - 1}"}  # Range is inclusive
-            response = requests.get(KEY_DOWNLOAD_URL, headers=headers)
-            return response.content
+        # Check if environment variable is set
+        if ENV_VARIABLE_CUSTOM_KEY is not None:
+            click.echo("Using user supplied key")
+            # Check size of file specified in environment variable
+            key_file_size = os.path.getsize(ENV_VARIABLE_CUSTOM_KEY)
+            if key_file_size >= size_bytes:
+                # Read n bytes from file specified in environment variable
+                with open(ENV_VARIABLE_CUSTOM_KEY, "rb") as f:
+                    return f.read(size_bytes)
+            else:
+                # Fail with error message
+                click.echo("User supplied key: The hidden file is too large!", err=True)
         else:
-            # Fail with error message
-            click.echo("The hidden file is too large!", err=True)
+            # Check size of downloadable key
+            response = requests.head(KEY_DOWNLOAD_URL, allow_redirects=True)
+            online_key_size = int(response.headers['Content-Length'])
+            print(f"Using online key  (up to {make_file_size_human_readable(int(response.headers['Content-Length']))})")
+            print(f"The size of the download will be {make_file_size_human_readable(size_bytes)}")
+            if online_key_size >= size_bytes:
+                # Download exactly the needed amount of bytes
+                headers = {"Range": f"bytes=0-{size_bytes - 1}"}  # Range is inclusive
+                response = requests.get(KEY_DOWNLOAD_URL, headers=headers)
+                return response.content
+            else:
+                # Fail with error message
+                click.echo("The hidden file is too large!", err=True)
 
 
 def decrypt_with_static_key(raw: bytes) -> bytes:
