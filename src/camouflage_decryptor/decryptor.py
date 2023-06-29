@@ -33,7 +33,7 @@ def get_static_camouflage_key(size_bytes: int) -> bytes:
                     return f.read(size_bytes)
             else:
                 # Fail with error message
-                click.echo("User supplied key: The hidden file is too large!", err=True)
+                raise click.exceptions.UsageError("User supplied key: The hidden file is too large!")
         else:
             # Check size of downloadable key
             response = requests.head(KEY_DOWNLOAD_URL, allow_redirects=True)
@@ -47,7 +47,7 @@ def get_static_camouflage_key(size_bytes: int) -> bytes:
                 return response.content
             else:
                 # Fail with error message
-                click.echo("The hidden file is too large!", err=True)
+                raise click.exceptions.UsageError("The hidden file is too large!")
 
 
 def decrypt_with_static_key(raw: bytes) -> bytes:
