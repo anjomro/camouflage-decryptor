@@ -55,6 +55,7 @@ cov-report = [
 [tool.hatch.build]
 include = [
   "assets/*",
+  "src/**/*",
 ]
 
 
