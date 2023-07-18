@@ -54,9 +54,12 @@ cov-report = [
 ]
 [tool.hatch.build]
 include = [
-  "assets/*",
+  "assets/STATIC_KEY_20MB",
   "src/**/*",
 ]
+
+[tool.hatch.build.sources]
+"src/camouflage_decryptor" = "camouflage_decryptor"
 
 
 cov = [
