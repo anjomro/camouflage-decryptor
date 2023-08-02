@@ -6,21 +6,24 @@ import os
 import click
 import requests
 
+from .key import get_key
+
 KEY_DOWNLOAD_URL = "https://github.com/anjomro/camouflage-decryptor/releases/download/v0.3.0/STATIC_KEY_1GB"
 
-EMBEDDED_KEY_LOCATION = os.path.join(os.path.dirname(__file__), "../../assets/STATIC_KEY_20MB")
+# Use once key can be embedded as binary
+# EMBEDDED_KEY_LOCATION = os.path.join(os.path.dirname(__file__), "../../assets/STATIC_KEY_20MB")
 
 ENV_VARIABLE_CUSTOM_KEY = os.environ.get("CAMOUFLAGE_DECRYPTOR_KEY", None)
+
 
 def get_static_camouflage_key(size_bytes: int) -> bytes:
     """Returns static camouflage key"""
     # Check file size of embedded key without reading it
-    embedded_key_size = os.path.getsize(EMBEDDED_KEY_LOCATION)
+    embedded_key_size = len(get_key())
 
     if embedded_key_size >= size_bytes:
         # Read n bytes from embedded key
-        with open(EMBEDDED_KEY_LOCATION, "rb") as f:
-            return f.read(size_bytes)
+        return get_key()[:size_bytes]
     else:
         # Check if environment variable is set
         if ENV_VARIABLE_CUSTOM_KEY is not None:
