@@ -58,8 +58,8 @@ cov-report = [
 #  "src/**/*",
 #]
 
-[tool.hatch.build.sources]
-"src/camouflage_decryptor" = "camouflage_decryptor"
+#[tool.hatch.build.sources]
+#"src/camouflage_decryptor" = "camouflage_decryptor"
 
 
 cov = [
