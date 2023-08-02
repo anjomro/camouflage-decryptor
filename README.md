@@ -73,8 +73,12 @@ python -m camouflage-decryptor get-original camouflaged-carrier.png | Out-File -
 
 #### Advanced: Generate own static key file for larger files
 
-The tool is able to decrypt files up to 20MB using an embedded key. For larger files up to 1GB a static key is downloaded to decrypt the file.
-For larger files or to avoid the download of the static key, a custom static key can be supplied. The key can be obtained using the following steps:
+The tool is able to decrypt files up to 10MB using an embedded key. For larger files up to 1GB a static key is downloaded to decrypt the file.
+For larger files or to avoid the download of the static key, a custom static key can be supplied. 
+
+A 1GB key can be downloaded from the releases for offline use: [https://github.com/anjomro/camouflage-decryptor/releases/download/v0.3.0/STATIC_KEY_1GB](https://github.com/anjomro/camouflage-decryptor/releases/download/v0.3.0/STATIC_KEY_1GB)
+
+A larger key can be obtained using the following steps:
 
 - Setup a virtual machine using Windows XP
   - This can be done using this vagrant box: https://app.vagrantup.com/dvgamerr/boxes/win-xp-sp3
@@ -118,9 +122,9 @@ If you want to use a custom static key to decrypt a file you can use it using th
 CAMOUFLAGE_DECRYPTOR_KEY=/path/to/static/key.bin camouflage-decryptor get-data my-stego-file.jpg > secret.txt
 ```
 
-It is necesary to use an absolute path to the static key.
+It is necessary to use an absolute path to the static key.
 
-To avoid prefixing every command you can also set the static key for your session:
+To avoid prefixing every command, you can also set the static key for your session:
 
 ```console
 export CAMOUFLAGE_DECRYPTOR_KEY=/path/to/static/key.bin
@@ -138,7 +142,7 @@ Both methods work with all functionality that requires a static key.
 To obtain a static key see the section above.
 
 #### Usage on Windows
-For all presented commands you might need to use the following syntax to call the script, e.g. if on Windows:
+For all presented commands, you might need to use the following syntax to call the script, e.g. if on Windows:
 ```console
 python -m camouflage_decryptor get-key my-stego-image.jpg
 ```
